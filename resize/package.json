@@ -1,0 +1,19 @@
+{
+  "name": "cloud_summit_demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deployResize": "gcloud beta functions deploy createThumbnail --stage-bucket show-cloud-functions-src --trigger-bucket resize-demo-in",
+    "testResize": "functions call createThumbnail --file sample_event.json"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/storage": "^1.2.0",
+    "bluebird": "^3.5.0",
+    "dotenv": "^4.0.0",
+    "fast-crc32c": "^1.0.4",
+    "imagemagick": "^0.1.3"
+  }
+}
