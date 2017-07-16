@@ -1,0 +1,18 @@
+{
+  "kind": "storage#object",
+  "resourceState": "exists",
+  "id": "resize-demo-in/cat-2083492_640.jpg/1500238217241920",
+  "selfLink": "https://www.googleapis.com/storage/v1/b/resize-demo-in/o/cat-2083492_640.jpg",
+  "name": "cat-2083492_640.jpg",
+  "bucket": "resize-demo-in",
+  "generation": "1500238217241920",
+  "metageneration": "1",
+  "contentType": "image/jpeg",
+  "timeCreated": "2017-07-16T20:50:17.178Z",
+  "updated": "2017-07-16T20:50:17.178Z",
+  "storageClass": "REGIONAL",
+  "size": "70394",
+  "md5Hash": "MDYzZGNlZjk0MmYzODk0M2UwNTRmOTUwMTgwYmZhMmQ=",
+  "mediaLink": "https://www.googleapis.com/download/storage/v1/b/resize-demo-in/o/cat-2083492_640.jpg?generation=1500238217241920&alt=media",
+  "crc32c": "098I6A=="
+}

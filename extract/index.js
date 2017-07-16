@@ -1,11 +1,10 @@
 require('dotenv').config();
 
 const path = require('path');
-const Promise = require("bluebird");
 
 var self = {
 
-  createThumbnail: function (event) {
+  extractLabels: function (event) {
 
     const file = event.data;
 
@@ -30,24 +29,18 @@ var self = {
           console.log(`Downloaded file to ${localFile}`);
 
           let parsedPath = path.parse(localFile);
-          let thumbPath = path.resolve(parsedPath.dir, parsedPath.name) + '_thumb' + parsedPath.ext;
+          let labelsName = parsedPath.name + '_labels.json';
 
-          const im = require('imagemagick');
-          
-          // Promises FTW!
-          var resize = Promise.promisify(im.resize);
+          const vision = require('@google-cloud/vision')();
 
-          return resize({
-            srcPath: localFile,
-            dstPath: thumbPath,
-            width: process.env.THUMB_WIDTH,
-            height: process.env.THUMB_HEIGHT         
-          }).then(value => {
-            console.log(`Created thumbnail in ${thumbPath}`);
+          return vision.detectLabels(localFile).then(labels => {
+            console.log(`Extracted labels ${labels}`);
             let outBucket = storage.bucket(process.env.OUT_BUCKET);
-            return outBucket.upload(thumbPath).then(value => {
-               console.log(`Uploaded thumbnail to ${process.env.OUT_BUCKET}`);
-               return true;
+            let outFile = outBucket.file(labelsName);
+            return outFile.save(JSON.stringify(labels), {
+              metadata: {
+                  contentType: 'application/json'
+              }              
             });
           });
         });
