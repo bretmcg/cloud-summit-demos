@@ -21,28 +21,29 @@ var self = {
 
         let localFile = path.resolve('/tmp', filename);
         let bucket = storage.bucket(file.bucket);
+        let parsedPath = path.parse(localFile);
+        let labelsName = parsedPath.name + '_labels.json';        
 
         return bucket.file(filename).download({
           destination: localFile
-        }).then(value => {
-
+        })
+        .then(value => {
           console.log(`Downloaded file to ${localFile}`);
-
-          let parsedPath = path.parse(localFile);
-          let labelsName = parsedPath.name + '_labels.json';
-
           const vision = require('@google-cloud/vision')();
-
-          return vision.detectLabels(localFile).then(labels => {
-            console.log(`Extracted labels ${labels}`);
-            let outBucket = storage.bucket(process.env.OUT_BUCKET);
-            let outFile = outBucket.file(labelsName);
-            return outFile.save(JSON.stringify(labels), {
-              metadata: {
-                  contentType: 'application/json'
-              }              
-            });
+          return vision.detectLabels(localFile);
+        })
+        .then(labels => {
+          console.log(`Extracted labels ${labels}`);
+          let outBucket = storage.bucket(process.env.OUT_BUCKET);
+          let outFile = outBucket.file(labelsName);
+          return outFile.save(JSON.stringify(labels, null, ' '), {
+            metadata: {
+                contentType: 'application/json'
+            }              
           });
+        })
+        .catch(err => {
+          console.error(err);
         });
       } else {
         console.err('Not a GCS event?');

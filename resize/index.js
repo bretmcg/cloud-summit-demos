@@ -22,15 +22,15 @@ var self = {
 
         let localFile = path.resolve('/tmp', filename);
         let bucket = storage.bucket(file.bucket);
+        let parsedPath = path.parse(localFile);
+        let thumbPath = path.resolve(parsedPath.dir, parsedPath.name) + '_thumb' + parsedPath.ext;
 
         return bucket.file(filename).download({
           destination: localFile
-        }).then(value => {
+        })
+        .then(value => {
 
           console.log(`Downloaded file to ${localFile}`);
-
-          let parsedPath = path.parse(localFile);
-          let thumbPath = path.resolve(parsedPath.dir, parsedPath.name) + '_thumb' + parsedPath.ext;
 
           const im = require('imagemagick');
           
@@ -42,15 +42,21 @@ var self = {
             dstPath: thumbPath,
             width: process.env.THUMB_WIDTH,
             height: process.env.THUMB_HEIGHT         
-          }).then(value => {
-            console.log(`Created thumbnail in ${thumbPath}`);
-            let outBucket = storage.bucket(process.env.OUT_BUCKET);
-            return outBucket.upload(thumbPath).then(value => {
-               console.log(`Uploaded thumbnail to ${process.env.OUT_BUCKET}`);
-               return true;
-            });
           });
-        });
+        })
+        .then(value => {
+          console.log(`Created thumbnail in ${thumbPath}`);
+          let outBucket = storage.bucket(process.env.OUT_BUCKET);
+          return outBucket.upload(thumbPath);
+        })
+        .then(value => {
+            console.log(`Uploaded thumbnail to ${process.env.OUT_BUCKET}`);
+            return true;
+        })
+        .catch(err => {
+          console.error(err);
+        });        
+
       } else {
         console.err('Not a GCS event?');
         return 'Failed';
