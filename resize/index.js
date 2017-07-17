@@ -29,9 +29,7 @@ var self = {
           destination: localFile
         })
         .then(value => {
-
           console.log(`Downloaded file to ${localFile}`);
-
           const im = require('imagemagick');
           
           // Promises FTW!
@@ -56,7 +54,6 @@ var self = {
         .catch(err => {
           console.error(err);
         });        
-
       } else {
         console.err('Not a GCS event?');
         return 'Failed';
