@@ -25,6 +25,12 @@ var self = {
         let parsedPath = path.parse(localFile);
         let thumbPath = path.resolve(parsedPath.dir, parsedPath.name) + '_thumb' + parsedPath.ext;
 
+        /*
+         1. Download the file from GCS to local tmpfs
+         2. Resize the image using imagemagick
+         3. Write the resized image back to GCS (different bucket!)
+         4. Profit
+         */
         return bucket.file(filename).download({
           destination: localFile
         })
@@ -48,8 +54,8 @@ var self = {
           return outBucket.upload(thumbPath);
         })
         .then(value => {
-            console.log(`Uploaded thumbnail to ${process.env.OUT_BUCKET}`);
-            return true;
+          console.log(`Uploaded thumbnail to ${process.env.OUT_BUCKET}`);
+          return true;
         })
         .catch(err => {
           console.error(err);
