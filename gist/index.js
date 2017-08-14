@@ -15,7 +15,7 @@ var self = {
     } else {
       let filename = file.name;
 
-      if(filename) {
+      if(filename.split('.').pop() === "json") { // only create gists of json files
         const storage = require('@google-cloud/storage')();
 
         console.log(`Triggered by create of file ${filename}`);
