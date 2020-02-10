@@ -6,6 +6,28 @@ const Promise = require("bluebird");
 var self = {
 
   createThumbnail: function (event) {
+    let thumbSizes = [
+      {
+        suffix: '__0_thumb',
+        width: 100,
+        height: 100
+      },
+      {
+        suffix: '__1_mobile',
+        width: 250,
+        height: 250
+      },
+      {
+        suffix: '__2_tablet',
+        width: 500,
+        height: 500
+      },
+      {
+        suffix: '__3_large',
+        width: 1200,
+        height: 1200
+      }
+    ];
 
     const file = event.data;
 
@@ -23,7 +45,6 @@ var self = {
         let localFile = path.resolve('/tmp', filename);
         let bucket = storage.bucket(file.bucket);
         let parsedPath = path.parse(localFile);
-        let thumbPath = path.resolve(parsedPath.dir, parsedPath.name) + '_thumb' + parsedPath.ext;
 
         /*
          1. Download the file from GCS to local tmpfs
@@ -38,23 +59,28 @@ var self = {
           console.log(`Downloaded file to ${localFile}`);
           const im = require('imagemagick');
           
-          // Promises FTW!
           var resize = Promise.promisify(im.resize);
+          let resizes = [];
 
-          return resize({
-            srcPath: localFile,
-            dstPath: thumbPath,
-            width: process.env.THUMB_WIDTH,
-            height: process.env.THUMB_HEIGHT         
-          });
+          for (let i=0; i<thumbSizes.length; i++) {
+            thumbSizes[i].thumbPath = path.resolve(parsedPath.dir, parsedPath.name)
+              + thumbSizes[i].suffix + parsedPath.ext;
+            resizes.push(resize({
+              srcPath: localFile,
+              dstPath: thumbSizes[i].thumbPath,
+              width: thumbSizes[i].width,
+              height: thumbSizes[i].height
+            }).then(() => {
+              console.log(`Created thumbnail(s) in ${thumbSizes[i].thumbPath}`);
+              let outBucket = storage.bucket(process.env.OUT_BUCKET);
+              return outBucket.upload(thumbSizes[i].thumbPath);
+            }));
+          }
+
+          return Promise.all(resizes);
         })
         .then(value => {
-          console.log(`Created thumbnail in ${thumbPath}`);
-          let outBucket = storage.bucket(process.env.OUT_BUCKET);
-          return outBucket.upload(thumbPath);
-        })
-        .then(value => {
-          console.log(`Uploaded thumbnail to ${process.env.OUT_BUCKET}`);
+          console.log(`Uploaded thumbnail(s) to ${process.env.OUT_BUCKET}`);
           return true;
         })
         .catch(err => {
